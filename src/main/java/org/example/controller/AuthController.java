@@ -1,43 +1,31 @@
 package org.example.controller;
 
-import org.example.dto.auth.LoginRequest;
-import org.example.dto.auth.LoginResponse;
-import org.example.exception.ResourceNotFoundException;
-import org.example.exception.UnauthorizedActionException;
-import org.example.model.User;
-import org.example.repository.UserRepository;
-import org.example.security.JwtUtils;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.example.service.AuthService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtils jwtUtils;
+    private final AuthService authService;
 
-    public AuthController(UserRepository userRepository,
-                          PasswordEncoder passwordEncoder,
-                          JwtUtils jwtUtils) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtils = jwtUtils;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "username", loginRequest.getUsername()));
+    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
+        String username = loginRequest.get("username");
+        String password = loginRequest.get("password");
 
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new UnauthorizedActionException("Invalid credentials");
-        }
+        String token = authService.login(username, password);
 
-        String token = jwtUtils.generateJwt(user.getUsername());
-        return new LoginResponse(token, user.getUsername());
+        return ResponseEntity.ok(Map.of(
+                "username", username,
+                "token", token
+        ));
     }
 }

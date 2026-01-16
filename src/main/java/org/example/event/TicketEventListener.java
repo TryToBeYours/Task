@@ -1,44 +1,39 @@
 package org.example.event;
 
 import org.example.model.Ticket;
-import org.example.service.EmailServices;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TicketEventListener {
 
-    private final EmailServices emailService;
-
-    public TicketEventListener(EmailServices emailService) {
-        this.emailService = emailService;
-    }
-
     @EventListener
-    public void handleTicketAssigned(TicketCreatedEvent event) {
+    public void handleTicketCreated(TicketCreatedEvent event) {
+        Ticket ticket = event.getTicket();
 
-        Ticket ticket = event.ticket();
+        String customerUsername = ticket.getCustomer() != null
+                ? ticket.getCustomer().getUsername()
+                : "UNKNOWN";
 
-        if (ticket.getAssignedAgent() != null) {
-            emailService.sendEmail(
-                    ticket.getAssignedAgent().getUsername(),
-                    "New Ticket Assigned",
-                    "Ticket: " + ticket.getSubject()
-            );
-        }
+        System.out.println(
+                "Ticket CREATED | Title: " + ticket.getTitle() +
+                        " | Customer: " + customerUsername +
+                        " | Status: " + ticket.getStatus()
+        );
     }
 
     @EventListener
     public void handleTicketResolved(TicketResolvedEvent event) {
+        Ticket ticket = event.getTicket();
 
-        Ticket ticket = event.ticket();
+        String agentUsername = ticket.getAssignedAgent() != null
+                ? ticket.getAssignedAgent().getUsername()
+                : "UNASSIGNED";
 
-        if (ticket.getCustomer() != null) {
-            emailService.sendEmail(
-                    ticket.getCustomer().getUsername(),
-                    "Ticket Resolved",
-                    "Your ticket '" + ticket.getSubject() + "' has been resolved."
-            );
-        }
+        System.out.println(
+                "Ticket RESOLVED | Title: " + ticket.getTitle() +
+                        " | Agent: " + agentUsername +
+                        " | Status: " + ticket.getStatus()
+        );
     }
 }

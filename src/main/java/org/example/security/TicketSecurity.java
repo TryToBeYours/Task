@@ -4,7 +4,7 @@ import org.example.model.Ticket;
 import org.example.repository.TicketRepository;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("ticketSecurity")
 public class TicketSecurity {
 
     private final TicketRepository ticketRepository;
@@ -14,11 +14,16 @@ public class TicketSecurity {
     }
 
     public boolean isAssignedAgent(Long ticketId, String username) {
-        return ticketRepository.findById(ticketId)
-                .map(ticket ->
-                        ticket.getAssignedAgent() != null &&
-                                ticket.getAssignedAgent().getUsername().equals(username)
-                )
-                .orElse(false);
+
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        if (ticket.getAssignedAgent() == null) {
+            return false;
+        }
+
+        return ticket.getAssignedAgent()
+                .getUsername()
+                .equals(username);
     }
 }

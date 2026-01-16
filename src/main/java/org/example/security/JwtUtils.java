@@ -4,70 +4,55 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
+import java.security.Key;
+import java.util.Collection;
 import java.util.Date;
-import java.util.Base64;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtils {
 
-    @Value("${jwt.secret:}")
-    private String base64Key;
-
-    private SecretKey key;
-
+    private final String jwtSecret = "MY_SUPER_SECRET_KEY_CHANGE_ME_12345";
     private final long jwtExpirationMs = 86400000;
 
-    @PostConstruct
-    public void init() {
-        try {
-            if (base64Key == null || base64Key.isBlank()) {
-                key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-                base64Key = Base64.getEncoder().encodeToString(key.getEncoded());
-                System.out.println("Generated new JWT key: " + base64Key);
-            } else {
-                key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(base64Key));
-            }
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid JWT secret, generating a new secure key...");
-            key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-            base64Key = Base64.getEncoder().encodeToString(key.getEncoded());
-            System.out.println("Generated new JWT key: " + base64Key);
-        }
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    public String generateJwt(String username) {
+    public String generateToken(String username, Collection<? extends GrantedAuthority> authorities) {
+        String roles = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
         return Jwts.builder()
                 .setSubject(username)
+                .claim("roles", roles)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                .signWith(key, SignatureAlgorithm.HS512)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public boolean validateJwt(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+    public String getUsernameFromToken(String token) {
+        return parseClaims(token).getSubject();
     }
 
-    public String getUsernameFromJwt(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
+    public boolean validateToken(String token, String username) {
+        return username.equals(getUsernameFromToken(token)) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return parseClaims(token).getExpiration().before(new Date());
+    }
+
+    private Claims parseClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.getSubject();
-    }
-
-    public String getBase64Key() {
-        return base64Key;
     }
 }

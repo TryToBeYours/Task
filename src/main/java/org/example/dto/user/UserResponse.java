@@ -1,19 +1,58 @@
 package org.example.dto.user;
 
-import org.example.model.Role;
+import java.util.Set;
 
 public class UserResponse {
 
     private Long id;
     private String username;
-    private Role role;
+    private String email;
+    private Set<String> roles;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UserResponse() {}
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public UserResponse(Long id, String username, String email, Set<String> roles) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.roles = roles;
+    }
 
-    public Role getRole() { return role; }
-    public void setRole(Role role) { this.role = role; }
+    public Long getId() {
+        return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Set<String> getRoles() {
+        return roles;
+    }
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
+    }
+
+    @Override
+    public String toString() {
+        return "UserResponse{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", roles=" + roles +
+                '}';
+    }
 }

@@ -1,6 +1,6 @@
 package org.example.model;
 
-public enum Ticketpriority {
+public enum TicketPriority {
     LOW,
     MEDIUM,
     HIGH

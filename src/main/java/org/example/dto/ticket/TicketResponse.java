@@ -3,27 +3,35 @@ package org.example.dto.ticket;
 public class TicketResponse {
 
     private Long id;
-    private String subject;
+    private String title;
     private String description;
-    private String status;
+    private Integer priority;
     private String customerUsername;
-    private String agentUsername;
+    private String assignedAgentUsername;
+    private String status;
+    private String createdAt;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getSubject() { return subject; }
-    public void setSubject(String subject) { this.subject = subject; }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public Integer getPriority() { return priority; }
+    public void setPriority(Integer priority) { this.priority = priority; }
 
     public String getCustomerUsername() { return customerUsername; }
     public void setCustomerUsername(String customerUsername) { this.customerUsername = customerUsername; }
 
-    public String getAgentUsername() { return agentUsername; }
-    public void setAgentUsername(String agentUsername) { this.agentUsername = agentUsername; }
+    public String getAssignedAgentUsername() { return assignedAgentUsername; }
+    public void setAssignedAgentUsername(String assignedAgentUsername) { this.assignedAgentUsername = assignedAgentUsername; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }

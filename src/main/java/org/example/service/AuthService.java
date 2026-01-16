@@ -1,40 +1,40 @@
 package org.example.service;
 
-import org.example.dto.auth.LoginRequest;
-import org.example.dto.auth.LoginResponse;
-import org.example.exception.ResourceNotFoundException;
-import org.example.exception.UnauthorizedActionException;
 import org.example.model.User;
 import org.example.repository.UserRepository;
 import org.example.security.JwtUtils;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
+    private final UserRepository userRepository;
 
-    public AuthService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       JwtUtils jwtUtils) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+    public AuthService(AuthenticationManager authenticationManager, JwtUtils jwtUtils,
+                       UserRepository userRepository) {
+        this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
+        this.userRepository = userRepository;
     }
 
-    public LoginResponse login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User", "username", loginRequest.getUsername()));
+    public String login(String username, String password) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
 
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new UnauthorizedActionException("Invalid credentials");
-        }
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        String token = jwtUtils.generateJwt(user.getUsername());
-        return new LoginResponse(token, user.getUsername());
+        return jwtUtils.generateToken(userDetails.getUsername(), userDetails.getAuthorities());
+    }
+
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }
