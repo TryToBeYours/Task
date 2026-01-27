@@ -37,6 +37,7 @@ public class UserService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setEmail(request.getEmail());
 
         Set<Role> roles = new HashSet<>();
         if (request.getRoles() != null) {
@@ -76,6 +77,10 @@ public class UserService {
 
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            user.setEmail(request.getEmail());
         }
 
         if (request.getRoles() != null && !request.getRoles().isEmpty()) {

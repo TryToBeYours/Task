@@ -11,6 +11,7 @@ import java.security.Key;
 import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
+import java.util.Collections;
 
 @Component
 public class JwtUtils {
@@ -35,6 +36,10 @@ public class JwtUtils {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+    public String generateToken(String username) {
+        return generateToken(username, Collections.<GrantedAuthority>emptyList());
+    }
+
 
     public String getUsernameFromToken(String token) {
         return parseClaims(token).getSubject();
