@@ -1,33 +1,29 @@
-version: "3.9"
+version: '3.9'
 
 services:
-  postgres:
+  crm-db:
     image: postgres:15
-    container_name: ticket-postgres
-    restart: always
+    container_name: crm-db
     environment:
       POSTGRES_DB: ticketdb
-      POSTGRES_USER: ticketuser
-      POSTGRES_PASSWORD: ticketpass
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
 
-  app:
+  spring-app:
     build: .
-    container_name: ticket-app
-    depends_on:
-      - postgres
+    container_name: spring-app
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ticketdb
-      SPRING_DATASOURCE_USERNAME: ticketuser
-      SPRING_DATASOURCE_PASSWORD: ticketpass
-      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
-      SPRING_PROFILES_ACTIVE: docker
-    restart: always
+      SPRING_DATASOURCE_URL: jdbc:postgresql://crm-db:5432/ticketdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: yourpassword
+    depends_on:
+      - crm-db
 
 volumes:
-  postgres_data:
+  postgres-data:
