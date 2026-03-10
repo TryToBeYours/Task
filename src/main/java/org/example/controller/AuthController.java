@@ -44,7 +44,6 @@ public class AuthController {
         );
     }
 
-    // LOGIN
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(
             @RequestBody Map<String, String> loginRequest) {
